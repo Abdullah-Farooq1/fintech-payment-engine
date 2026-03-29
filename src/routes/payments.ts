@@ -1,3 +1,4 @@
+import { auditLog } from "../middleware/security";
 import { Hono } from "hono";
 import { createPaymentIntentSchema } from "../lib/validators";
 import { createPaymentIntent } from "../lib/paymentService";
@@ -16,6 +17,7 @@ paymentsRoute.post(
   "/payment-intent",
   idempotencyMiddleware,
   validateBody(createPaymentIntentSchema),
+  auditLog("create_payment_intent"),
   async (c) => {
     try {
       const input = c.get("validatedBody");

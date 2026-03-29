@@ -28,3 +28,5 @@ drizzle/meta/
 # Vite
 admin-portal/dist/
 admin-portal/node_modules/
+
+logs/

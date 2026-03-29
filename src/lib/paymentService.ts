@@ -3,6 +3,7 @@ import { accounts, transactions, entries } from "../schema";
 import { eq, sql } from "drizzle-orm";
 import { CreatePaymentIntentInput } from "./validators";
 import { withRetry, isRetryableError } from "./retry";
+import { logger, logPayment, logError } from "./logger";
 
 const getLockedAccount = async (tx: any, accountId: string) => {
   const rows = await tx.execute(
@@ -41,32 +42,31 @@ export const createPaymentIntent = async (
           .where(eq(transactions.idempotencyKey, idempotencyKey));
 
         if (existing) {
-          return { alreadyExists: true, transaction: existing };
+          logger.info("Duplicate payment detected", {
+            type: "payment",
+            idempotencyKey,
+            existingTransactionId: existing.id,
+          });
+          return { alreadyExists: true as const, transaction: existing };
         }
 
         // ── Step 2: Lock source account row
         const sourceAccount = await getLockedAccount(tx, sourceAccountId);
-
         if (!sourceAccount) {
           throw new Error(`Source account ${sourceAccountId} not found`);
         }
 
         // ── Step 3: Lock destination account row
         const destinationAccount = await getLockedAccount(tx, destinationAccountId);
-
         if (!destinationAccount) {
-          throw new Error(
-            `Destination account ${destinationAccountId} not found`
-          );
+          throw new Error(`Destination account ${destinationAccountId} not found`);
         }
 
-        // ── Step 4: Check sufficient funds on locked row
+        // ── Step 4: Check sufficient funds
         const sourceBalance = parseFloat(sourceAccount.balance);
         if (sourceBalance < amount) {
           throw new Error(
-            `Insufficient funds. Available: $${sourceBalance.toFixed(
-              4
-            )}, Required: $${amount.toFixed(4)}`
+            `Insufficient funds. Available: $${sourceBalance.toFixed(4)}, Required: $${amount.toFixed(4)}`
           );
         }
 
@@ -131,19 +131,13 @@ export const createPaymentIntent = async (
         // ── Step 10: Update source balance
         await tx
           .update(accounts)
-          .set({
-            balance: newSourceBalance,
-            updatedAt: new Date(),
-          })
+          .set({ balance: newSourceBalance, updatedAt: new Date() })
           .where(eq(accounts.id, sourceAccountId));
 
         // ── Step 11: Update destination balance
         await tx
           .update(accounts)
-          .set({
-            balance: newDestBalance,
-            updatedAt: new Date(),
-          })
+          .set({ balance: newDestBalance, updatedAt: new Date() })
           .where(eq(accounts.id, destinationAccountId));
 
         // ── Step 12: Mark transaction as posted
@@ -157,8 +151,17 @@ export const createPaymentIntent = async (
           .where(eq(transactions.id, transaction.id))
           .returning();
 
+        logPayment(
+          "posted",
+          postedTransaction.id,
+          amount,
+          currency,
+          "posted",
+          { idempotencyKey, sourceAccountId, destinationAccountId }
+        );
+
         return {
-          alreadyExists: false,
+          alreadyExists: false as const,
           transaction: postedTransaction,
           debitEntry,
           creditEntry,

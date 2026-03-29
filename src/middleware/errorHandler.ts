@@ -1,6 +1,6 @@
 import { Context, Next } from "hono";
+import { logError } from "../lib/logger";
 
-// Known business logic error messages
 const KNOWN_ERRORS = [
   "not found",
   "Insufficient funds",
@@ -27,6 +27,10 @@ export const formatError = (
   const message = error?.message ?? "An unexpected error occurred";
   const known = isKnownError(message);
 
+  if (!known) {
+    logError("Unhandled server error", error as Error, { traceId });
+  }
+
   return {
     success: false,
     error: message,
@@ -39,10 +43,8 @@ export const errorHandler = async (c: Context, next: Next) => {
   try {
     await next();
   } catch (error: any) {
-    const traceId = c.get("traceId");
+    const traceId = (c as any).get("traceId");
     const formatted = formatError(error, traceId);
-
-    console.error(`❌ [${traceId}] Error:`, error?.message);
 
     if (isKnownError(error?.message ?? "")) {
       return c.json(formatted, 422);
