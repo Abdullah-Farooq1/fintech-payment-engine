@@ -1,0 +1,30 @@
+code .gitignore
+```
+
+Paste this content:
+```
+# Node
+node_modules/
+dist/
+.env
+
+# Go
+gateway/vendor/
+gateway/*.exe
+
+# Temporal
+temporal/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Drizzle
+drizzle/meta/
+
+# Vite
+admin-portal/dist/
+admin-portal/node_modules/

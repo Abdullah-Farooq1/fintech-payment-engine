@@ -1,0 +1,48 @@
+{
+  "name": "fintech-ledger",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  "dev": "ts-node src/index.ts",
+  "server": "ts-node src/server.ts",
+  "worker": "ts-node src/temporal/worker.ts",
+  "build": "tsc",
+  "generate": "drizzle-kit generate",
+  "migrate": "drizzle-kit migrate",
+  "push": "drizzle-kit push",
+  "studio": "drizzle-kit studio",
+  "seed:accounts": "ts-node src/lib/seedAccounts.ts",
+  "seed:transactions": "ts-node src/lib/seedTransactions.ts",
+  "test:ledger": "ts-node src/lib/testLedger.ts",
+  "test:api": "ts-node src/lib/testAPI.ts",
+  "test:locking": "ts-node src/lib/testLocking.ts",
+  "test:isolation": "ts-node src/lib/testIsolation.ts",
+  "test:idempotency": "ts-node src/lib/testIdempotency.ts",
+  "test:retry": "ts-node src/lib/testRetry.ts",
+  "test:reliability": "ts-node src/lib/testReliability.ts"
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/pg": "^8.20.0",
+    "drizzle-kit": "^0.31.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.2"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.11",
+    "@temporalio/activity": "^1.15.0",
+    "@temporalio/client": "^1.15.0",
+    "@temporalio/worker": "^1.15.0",
+    "@temporalio/workflow": "^1.15.0",
+    "dotenv": "^17.3.1",
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.12.9",
+    "pg": "^8.20.0",
+    "zod": "^4.3.6"
+  }
+}
