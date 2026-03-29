@@ -1,3 +1,7 @@
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});
+
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { logger } from "hono/logger";

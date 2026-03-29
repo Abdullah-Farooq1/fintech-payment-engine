@@ -1,0 +1,8 @@
+[phases.install]
+cmds = ["npm install --include=dev"]
+
+[phases.build]
+cmds = []
+
+[start]
+cmd = "npx ts-node src/server.prod.ts"
