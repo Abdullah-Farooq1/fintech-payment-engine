@@ -6,7 +6,7 @@
   "scripts": {
   "dev": "ts-node src/index.ts",
   "server": "ts-node src/server.ts",
-  "worker": "ts-node src/temporal/worker.ts",
+  "start": "ts-node src/server.prod.ts",
   "build": "tsc",
   "generate": "drizzle-kit generate",
   "migrate": "drizzle-kit migrate",
